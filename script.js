@@ -231,17 +231,22 @@ async function fetchNowPlayingArchive() {
 // ─────────────────────────────────────────────────────────────────────────────
 // 6) ADMIN & UI ACTIONS
 // ─────────────────────────────────────────────────────────────────────────────
+// ─── CHAT POP-OUT HANDLERS (drop these in, replacing your old versions) ───────
 function openChatPopup() {
   const url = `https://app.radiocult.fm/embed/chat/${STATION_ID}?theme=midnight&primaryColor=%235A8785&corners=sharp`;
+
   if (isMobile) {
-    const modal    = document.getElementById('chatModal'),
-          iframeEl = document.getElementById('chatModalIframe');
+    const modal    = document.getElementById('chatModal');
+    const iframeEl = document.getElementById('chatModalIframe');
     if (modal && iframeEl) {
-      // always reload on mobile to ensure input shows
-      iframeEl.src = url;
+      // only set src once so you don't stomp on your schedule logic
+      if (iframeEl.src !== url) {
+        iframeEl.src = url;
+      }
       modal.style.display = 'flex';
     }
   } else {
+    // desktop: window.open
     if (chatPopupWindow && !chatPopupWindow.closed) {
       chatPopupWindow.focus();
     } else {
@@ -255,10 +260,11 @@ function openChatPopup() {
 }
 
 function closeChatModal() {
-  const modal    = document.getElementById('chatModal'),
-        iframeEl = document.getElementById('chatModalIframe');
-  if (modal && iframeEl) modal.style.display = 'none';
+  const modal = document.getElementById('chatModal');
+  if (modal) modal.style.display = 'none';
 }
+// ───────────────────────────────────────────────────────────────────────────────
+
 
 
 // ─────────────────────────────────────────────────────────────────────────────
