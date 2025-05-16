@@ -66,6 +66,35 @@ html, body {
   background-size: cover;
 animation: slideLeftToRight var(--gif-speed) linear infinite;
 }
+/* THIRD GIF (Right→Left) */
+.header-gif-alt-right {
+  position: absolute;
+  top: 0;
+  left: 75%;   /* adjust starting offset so it doesn’t overlap the first */
+  height: var(--gif-height);
+  width:  var(--gif-width);
+  opacity: var(--gif-opacity);
+  z-index: 0;
+  background: url('https://cutterschoiceradio.com/Untitled%20design(7).gif')
+              no-repeat center center;
+  background-size: cover;
+  animation: slideRightToLeft var(--gif-speed) linear infinite;
+}
+
+/* FOURTH GIF (Left→Right) */
+.header-gif-alt-left {
+  position: absolute;
+  top: 0;
+  right: 75%;  /* mirror of the above */
+  height: var(--gif-height);
+  width:  var(--gif-width);
+  opacity: var(--gif-opacity);
+  z-index: 0;
+  background: url('https://cutterschoiceradio.com/Untitled%20design(8).gif')
+              no-repeat center center;
+  background-size: cover;
+  animation: slideLeftToRight var(--gif-speed) linear infinite;
+}
 
 /* ─── ANIMATIONS ───────────────────────────────────────────────────────────── */
 @keyframes slideRightToLeft {
