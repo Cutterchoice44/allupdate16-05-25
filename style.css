@@ -503,14 +503,6 @@ section h2 {
   }
 }
 
-/* MOBILE OVERRIDE: show chat pop-out button beneath chat */
-@media (max-width: 768px) {
-  .popout-btn {
-    display: inline-block !important;
-    margin: 0.5rem auto !important;
-  }
-}
-
 /* SLIDESHOW: enlarge by 20% and teal border */
 #slideshow {
   transform: scale(1.2);
@@ -680,20 +672,6 @@ section h2::after {
   }
 
 /* ─── FIX: Mobile Chat Pop-Out Input Visibility ───────────────────────────── */
-@media (max-width: 768px) {
-  /* Hidden by default; JS will do `modal.style.display = 'flex'` to open it */
-  #chatModal {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw;  height: 100vh;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 9999;
-    /* no display:flex here in CSS! JS will add it inline */
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
 
   /* Make wrapper fill the viewport */
   #chatModal .modal-content {
@@ -721,3 +699,57 @@ section h2::after {
     z-index: 10000;
   }
 }
+
+/* ─── FIX Mobile Chat Modal to fill viewport ─────────────────────────────── */
+@media (max-width: 768px) {
+  #chatModal {
+    /* cover entire screen */
+    position: fixed;
+    inset: 0;              /* top:0; right:0; bottom:0; left:0; */
+    display: none;         /* JS will set inline display:flex */
+    z-index: 100000;       /* above everything */
+    background: rgba(0,0,0,0.9);
+
+    /* flex so child can stretch */
+    display: flex;         /* remove any other CSS display settings */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* when you call openChatPopup(): */
+  /*   document.getElementById('chatModal').style.display = 'flex'; */
+
+  #chatModal .modal-content {
+    /* take up the full modal */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+  }
+
+  #chatModal .modal-content iframe {
+    /* stretch the iframe (including the input bar) */
+    flex: 1 1 auto !important;
+    width: 100%  !important;
+    height: 100% !important;
+    border: none !important;
+    border-radius: 0;
+  }
+
+  #chatModal .close-btn {
+    /* always on top of the iframe */
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 100001;
+  }
+
+  /* hide the in-page “Pop Out Chat” button on mobile */
+  .chat .popout-btn {
+    display: none !important;
+  }
+}
+
