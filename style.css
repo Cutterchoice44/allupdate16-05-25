@@ -448,46 +448,63 @@ section h2 {
 }
 @media (max-width: 768px) {
   /* 1. Hide the second logo on mobile */
-  header .logo-container:nth-ofype(3) {
+  header .logo-container:nth-of-type(3) {
     display: none !important;
   }
-  /* 2. Hide the redundant archive title under player */
+
+  /* 2. Hide the redundant archive title under the player */
   #now-archive {
     display: none !important;
   }
-  /* 3. Show the Chat popout button on mobile */
+
+  /* 3. Show the “Chat” pop-out button on mobile */
   .chat-btn-mobile {
     display: inline-block !important;
     margin: 0.5rem auto;
   }
 }
 
-/* Chat Modal Overlay (mobile only) */
+/* ─── CHAT MODAL OVERLAY (mobile only) ─────────────────────────────────── */
 @media (max-width: 768px) {
   #chatModal {
-    position: fixed; top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.9);
-    display: none; z-index: 9999;
-    justify-content: center; align-items: center;
+    position: fixed;
+    inset: 0;                        /* covers the entire screen */
+    background: rgba(0, 0, 0, 0.9);
+    display: none;                   /* JS will toggle to flex */
+    z-index: 9999;
+
+    display: flex;                   /* comment out or remove if you prefer JS to set it inline */
+    justify-content: center;
+    align-items: center;
   }
   #chatModal .modal-content {
-    position: relative; width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
   }
-  #chatModal .modal-content iframe {
-    width: 100%; height: 100%; border: none; border-radius: 4px;
+  /* This is your **static** modal iframe */
+  #chatModalIframe {
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 4px;
   }
-  #chatModal .close-btn {
-    position: absolute; top: 1rem; right: 1rem;
-    background: var(--brand-teal); color: #fff;
-    border: none; padding: 0.5rem; border-radius: 4px;
-    font-size: 1rem; cursor: pointer; z-index: 10000;
+  /* “Close” button */
+  .close-btn {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    z-index: 10000;
   }
-  /* Hide default chat pop-out button */
-  .chat .popout-btn { display: none !important; }
+
+  /* hide the inline desktop pop-out button */
+  .chat .popout-btn {
+    display: none !important;
+  }
 }
 
-/* CENTER Pop-Out Chat button */
+/* ─── CENTER Pop-Out Button ─────────────────────────────────────────────── */
 .chat-actions {
   text-align: center;
 }
@@ -672,84 +689,48 @@ section h2::after {
   }
 
 /* ─── FIX: Mobile Chat Pop-Out Input Visibility ───────────────────────────── */
-
-  /* Make wrapper fill the viewport */
-  #chatModal .modal-content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* Stretch the chat iframe so its input bar is always visible */
-  #chatModal .modal-content iframe {
-    flex: 1 1 auto !important;
-    width: 100%  !important;
-    height: auto !important;
-    max-height: 100% !important;
-    border: none !important;
-    border-radius: 4px;
-  }
-
-  /* Keep the “Close” button above everything */
-  #chatModal .close-btn {
-    position: absolute;
-    top: 1rem; right: 1rem;
-    z-index: 10000;
-  }
-}
-
-/* ─── FIX Mobile Chat Modal to fill viewport ─────────────────────────────── */
+/* ─── CHAT MODAL OVERLAY (mobile only) ─────────────────────────────────── */
 @media (max-width: 768px) {
   #chatModal {
-    /* cover entire screen */
     position: fixed;
-    inset: 0;              /* top:0; right:0; bottom:0; left:0; */
-    display: none;         /* JS will set inline display:flex */
-    z-index: 100000;       /* above everything */
+    inset: 0;                    /* top/right/bottom/left:0 */
     background: rgba(0,0,0,0.9);
-
-    /* flex so child can stretch */
-    display: flex;         /* remove any other CSS display settings */
-    flex-direction: column;
+    display: none;               /* JS will toggle to flex */
+    z-index: 9999;
     justify-content: center;
     align-items: center;
   }
 
-  /* when you call openChatPopup(): */
-  /*   document.getElementById('chatModal').style.display = 'flex'; */
-
+  /* inner wrapper fills */
   #chatModal .modal-content {
-    /* take up the full modal */
-    position: relative;
     display: flex;
     flex-direction: column;
     width: 100%;
     height: 100%;
-    padding: 0;
+    position: relative;
   }
 
+  /* modal iframe (whether static #chatModalIframe or the one you inject) */
   #chatModal .modal-content iframe {
-    /* stretch the iframe (including the input bar) */
     flex: 1 1 auto !important;
     width: 100%  !important;
     height: 100% !important;
     border: none !important;
-    border-radius: 0;
+    border-radius: 4px;   /* optional */
   }
 
+  /* always-on-top close button */
   #chatModal .close-btn {
-    /* always on top of the iframe */
     position: absolute;
     top: 1rem;
     right: 1rem;
-    z-index: 100001;
+    z-index: 10000;
   }
 
-  /* hide the in-page “Pop Out Chat” button on mobile */
+  /* hide the inline pop-out chat button on mobile */
   .chat .popout-btn {
     display: none !important;
   }
 }
+
 
