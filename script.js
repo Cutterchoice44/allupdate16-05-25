@@ -295,51 +295,28 @@ async function fetchNowPlayingArchive() {
 // ─── CHAT POP-OUT HANDLERS (mobile & desktop) ───────────────────────────────
 
 // Open a **real** window on desktop, but on mobile inject a **fresh** iframe
+// Pop the mobile modal into view (or open a real popup on desktop)
 function openChatPopup() {
-  const modal     = document.getElementById('chatModal');
-  const container = modal.querySelector('.modal-content');
-  const url       = `https://app.radiocult.fm/embed/chat/${STATION_ID}?theme=midnight&primaryColor=%235A8785&corners=sharp`;
-
+  const url   = `https://app.radiocult.fm/embed/chat/${STATION_ID}?theme=midnight&primaryColor=%235A8785&corners=sharp`;
   if (isMobile) {
-    // remove any old iframe
-    container.querySelectorAll('iframe').forEach(el => el.remove());
-
-    // inject a fresh iframe (with its input bar)
-    const chatIframe = document.createElement('iframe');
-    chatIframe.src     = url;
-    chatIframe.title   = 'Cutters Choice Radio Chat';
-    chatIframe.allow   = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
-    chatIframe.loading = 'eager';
-    chatIframe.style.cssText = `
-      flex: 1 1 auto;
-      width: 100% !important;
-      height: 100% !important;
-      border: none !important;
-      border-radius: 4px;
-    `;
-    container.appendChild(chatIframe);
-
-    // show the modal
-    modal.style.display = 'flex';
-    return;
-  }
-
-  // desktop fallback: real popup
-  if (chatPopupWindow && !chatPopupWindow.closed) {
-    chatPopupWindow.focus();
+    // show the modal (iframe is already in DOM and loaded)
+    document.getElementById('chatModal').style.display = 'flex';
   } else {
-    chatPopupWindow = window.open(
-      url,
-      'CuttersChatPopup',
-      'width=400,height=700,resizable=yes,scrollbars=yes'
-    );
+    // desktop: real window
+    if (chatPopupWindow && !chatPopupWindow.closed) {
+      chatPopupWindow.focus();
+    } else {
+      chatPopupWindow = window.open(
+        url,
+        'CuttersChatPopup',
+        'width=400,height=700,resizable=yes,scrollbars=yes'
+      );
+    }
   }
 }
 
 function closeChatModal() {
-  const modal = document.getElementById('chatModal');
-  // simply hide it
-  modal.style.display = 'none';
+  document.getElementById('chatModal').style.display = 'none';
 }
 
 
