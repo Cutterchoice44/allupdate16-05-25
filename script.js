@@ -236,17 +236,17 @@ function openChatPopup() {
   const url = `https://app.radiocult.fm/embed/chat/${STATION_ID}?theme=midnight&primaryColor=%235A8785&corners=sharp`;
 
   if (isMobile) {
-    const modal    = document.getElementById('chatModal');
-    const iframeEl = document.getElementById('chatModalIframe');
-    if (modal && iframeEl) {
-      // only set src once so you don't stomp on your schedule logic
-      if (iframeEl.src !== url) {
-        iframeEl.src = url;
-      }
+    // Mobile: move the already-loaded iframe (with input) into the modal
+    const mainSection = document.querySelector('section.chat');
+    const chatIframe  = mainSection.querySelector('iframe');
+    const modal       = document.getElementById('chatModal');
+    const container   = modal.querySelector('.modal-content');
+    if (chatIframe && modal && container) {
+      container.appendChild(chatIframe);
       modal.style.display = 'flex';
     }
   } else {
-    // desktop: window.open
+    // Desktop: original popup window
     if (chatPopupWindow && !chatPopupWindow.closed) {
       chatPopupWindow.focus();
     } else {
@@ -260,8 +260,16 @@ function openChatPopup() {
 }
 
 function closeChatModal() {
-  const modal = document.getElementById('chatModal');
-  if (modal) modal.style.display = 'none';
+  // Only applies on mobile (modal)
+  const modal       = document.getElementById('chatModal');
+  const mainSection = document.querySelector('section.chat');
+  const modalIframe = modal.querySelector('iframe');
+  if (modal && mainSection && modalIframe) {
+    // Move it back into the page just above the pop-out button
+    const actions = mainSection.querySelector('.chat-actions');
+    mainSection.insertBefore(modalIframe, actions);
+    modal.style.display = 'none';
+  }
 }
 // ───────────────────────────────────────────────────────────────────────────────
 
