@@ -16,7 +16,7 @@ let visitorId;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 2) BAN LOGIC (FingerprintJS v3+)
-// Load FingerprintJS in your <head> with: 
+// Load FingerprintJS in your <head> with:
 // <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js" defer></script>
 // ─────────────────────────────────────────────────────────────────────────────
 function blockChat() {
@@ -61,7 +61,7 @@ async function sendBan() {
     console.error('Error sending ban:', err);
   }
 }
-// expose for manual testing
+// expose for console
 window.sendBan = sendBan;
 
 
@@ -70,9 +70,7 @@ window.sendBan = sendBan;
 // ─────────────────────────────────────────────────────────────────────────────
 function createGoogleCalLink(title, startUtc, endUtc) {
   if (!startUtc || !endUtc) return "#";
-  const fmt = dt => new Date(dt)
-    .toISOString()
-    .replace(/[-:]|\.\d{3}/g, "");
+  const fmt = dt => new Date(dt).toISOString().replace(/[-:]|\.\d{3}/g, "");
   return (
     `https://calendar.google.com/calendar/render?action=TEMPLATE` +
     `&text=${encodeURIComponent(title)}` +
@@ -83,7 +81,7 @@ function createGoogleCalLink(title, startUtc, endUtc) {
 }
 
 async function rcFetch(path) {
-  const res = await fetch(BASE_URL + path, { headers: { "x-api-key": API_KEY } });
+  const res = await fetch(BASE_URL + path, { headers: { 'x-api-key': API_KEY } });
   if (!res.ok) throw new Error(`Fetch error ${res.status}`);
   return res.json();
 }
@@ -91,12 +89,10 @@ async function rcFetch(path) {
 function shuffleIframesDaily() {
   const container = document.getElementById("mixcloud-list");
   if (!container) return;
-
   const HOUR = 60 * 60 * 1000;
   const lastShuffle = parseInt(localStorage.getItem("lastShuffleTime"), 10);
   const now = Date.now();
   if (lastShuffle && (now - lastShuffle) < HOUR) return;
-
   const iframes = Array.from(container.querySelectorAll("iframe"));
   for (let i = iframes.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -117,7 +113,6 @@ async function loadArchives() {
     const archives = await res.json();
     const container = document.getElementById('mixcloud-list');
     container.innerHTML = '';
-
     archives.forEach((entry, idx) => {
       const feed = encodeURIComponent(entry.url);
       const item = document.createElement('div');
@@ -125,32 +120,19 @@ async function loadArchives() {
       const iframe = document.createElement('iframe');
       iframe.className = 'mixcloud-iframe';
       iframe.src = `https://www.mixcloud.com/widget/iframe/?hide_cover=1&light=1&feed=${feed}`;
-      iframe.loading = 'lazy';
-      iframe.width = '100%';
-      iframe.height = '120';
-      iframe.frameBorder = '0';
+      iframe.loading = 'lazy'; iframe.width = '100%'; iframe.height = '120'; iframe.frameBorder = '0';
       item.appendChild(iframe);
-
       if (!isMobile) {
         const remove = document.createElement('a');
-        remove.href = '#';
-        remove.className = 'remove-link';
-        remove.textContent = 'Remove show';
-        remove.addEventListener('click', e => {
-          e.preventDefault();
-          deleteMixcloud(idx);
-        });
+        remove.href = '#'; remove.className = 'remove-link'; remove.textContent = 'Remove show';
+        remove.addEventListener('click', e => { e.preventDefault(); deleteMixcloud(idx); });
         item.appendChild(remove);
       }
-
       container.prepend(item);
     });
-
     shuffleIframesDaily();
-
     const scriptTag = document.createElement('script');
-    scriptTag.src = 'https://widget.mixcloud.com/widget.js';
-    scriptTag.async = true;
+    scriptTag.src = 'https://widget.mixcloud.com/widget.js'; scriptTag.async = true;
     document.body.appendChild(scriptTag);
   } catch (err) {
     console.error('Archive load error:', err);
@@ -158,21 +140,13 @@ async function loadArchives() {
 }
 
 async function addMixcloud() {
-  const input = document.getElementById('mixcloud-url');
-  if (!input) return;
-  const url = input.value.trim();
-  if (!url) return alert('Please paste a valid Mixcloud URL');
-  const pw = prompt('Enter archive password:');
-  if (pw !== MIXCLOUD_PASSWORD) return alert('Incorrect password');
+  const input = document.getElementById('mixcloud-url'); if (!input) return;
+  const url = input.value.trim(); if (!url) return alert('Please paste a valid Mixcloud URL');
+  const pw = prompt('Enter archive password:'); if (pw !== MIXCLOUD_PASSWORD) return alert('Incorrect password');
   try {
-    const form = new FormData();
-    form.append('url', url);
-    form.append('password', pw);
+    const form = new FormData(); form.append('url', url); form.append('password', pw);
     const res = await fetch('add_archive.php', { method: 'POST', body: form });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || res.statusText);
-    }
+    if (!res.ok) throw new Error((await res.json()).error || res.statusText);
     input.value = '';
     await loadArchives();
   } catch (err) {
@@ -181,17 +155,11 @@ async function addMixcloud() {
 }
 
 async function deleteMixcloud(index) {
-  const pw = prompt('Enter archive password:');
-  if (pw !== MIXCLOUD_PASSWORD) return alert('Incorrect password');
+  const pw = prompt('Enter archive password:'); if (pw !== MIXCLOUD_PASSWORD) return alert('Incorrect password');
   try {
-    const form = new FormData();
-    form.append('index', index);
-    form.append('password', pw);
+    const form = new FormData(); form.append('index', index); form.append('password', pw);
     const res = await fetch('delete_archive.php', { method: 'POST', body: form });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || res.statusText);
-    }
+    if (!res.ok) throw new Error((await res.json()).error || res.statusText);
     await loadArchives();
   } catch (err) {
     alert('Delete failed: ' + err.message);
@@ -206,9 +174,7 @@ async function fetchLiveNow() {
   try {
     const { result } = await rcFetch(`/station/${STATION_ID}/schedule/live`);
     const { metadata: md = {}, content: ct = {} } = result;
-    document.getElementById('now-dj').textContent = md.artist
-      ? `${md.artist} – ${md.title}`
-      : (ct.title || 'No live show');
+    document.getElementById('now-dj').textContent = md.artist ? `${md.artist} – ${md.title}` : (ct.title || 'No live show');
     document.getElementById('now-art').src = md.artwork_url || FALLBACK_ART;
   } catch (e) {
     console.error('Live fetch error:', e);
@@ -223,93 +189,42 @@ async function fetchWeeklySchedule() {
   container.innerHTML = '<p>Loading this week\'s schedule…</p>';
   try {
     const now = new Date(), then = new Date(now.getTime() + 7*24*60*60*1000);
-    const { schedules } = await rcFetch(
-      `/station/${STATION_ID}/schedule?startDate=${now.toISOString()}&endDate=${then.toISOString()}`
-    );
-    if (!schedules.length) {
-      container.innerHTML = '<p>No shows scheduled this week.</p>';
-      return;
-    }
+    const { schedules } = await rcFetch(`/station/${STATION_ID}/schedule?startDate=${now.toISOString()}&endDate=${then.toISOString()}`);
+    if (!schedules.length) { container.innerHTML = '<p>No shows scheduled this week.</p>'; return; }
     const byDay = schedules.reduce((acc, ev) => {
-      const day = new Date(ev.startDateUtc)
-        .toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'short' });
-      (acc[day] = acc[day] || []).push(ev);
-      return acc;
+      const day = new Date(ev.startDateUtc).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
+      (acc[day] = acc[day]||[]).push(ev); return acc;
     }, {});
     container.innerHTML = '';
-    const fmt = iso => new Date(iso)
-      .toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
-    Object.entries(byDay).forEach(([day, events]) => {
-      const h3 = document.createElement('h3');
-      h3.textContent = day;
-      container.appendChild(h3);
-
-      const ul = document.createElement('ul');
-      ul.style.listStyle = 'none';
-      ul.style.padding = '0';
-
-      events.forEach(ev => {
-        const li = document.createElement('li');
-        li.style.marginBottom = '1rem';
-        const wrap = document.createElement('div');
-        wrap.style.display = 'flex';
-        wrap.style.alignItems = 'center';
-        wrap.style.gap = '8px';
-
-        const t = document.createElement('strong');
-        t.textContent = `${fmt(ev.startDateUtc)}–${fmt(ev.endDateUtc)}`;
-        wrap.appendChild(t);
-
-        const art = ev.metadata?.artwork?.default || ev.metadata?.artwork?.original;
-        if (art) {
-          const img = document.createElement('img');
-          img.src = art;
-          img.alt = `${ev.title} artwork`;
-          img.style.cssText = 'width:30px;height:30px;object-fit:cover;border-radius:3px;';
-          wrap.appendChild(img);
-        }
-
-        const span = document.createElement('span');
-        span.textContent = ev.title;
-        wrap.appendChild(span);
-
-        if (!/archive/i.test(ev.title)) {
-          const a = document.createElement('a');
-          a.href = createGoogleCalLink(ev.title, ev.startDateUtc, ev.endDateUtc);
-          a.target = '_blank';
-          a.innerHTML = '📅';
-          a.style.cssText = 'font-size:1.4rem;text-decoration:none;margin-left:6px;';
-          wrap.appendChild(a);
-        }
-
-        li.appendChild(wrap);
-        ul.appendChild(li);
-      });
-
-      container.appendChild(ul);
+    const fmt = iso => new Date(iso).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    Object.entries(byDay).forEach(([day, evs]) => {
+      const h3 = document.createElement('h3'); h3.textContent = day; container.appendChild(h3);
+      const ul = document.createElement('ul'); ul.style.listStyle='none'; ul.style.padding='0';
+      evs.forEach(ev => {
+        const li = document.createElement('li'); li.style.marginBottom='1rem';
+        const wrap = document.createElement('div'); wrap.style.display='flex'; wrap.style.alignItems='center'; wrap.style.gap='8px';
+        const t = document.createElement('strong'); t.textContent = `${fmt(ev.startDateUtc)}–${fmt(ev.endDateUtc)}`; wrap.appendChild(t);
+        const art = ev.metadata?.artwork?.default||ev.metadata?.artwork?.original; if(art) { const img=document.createElement('img'); img.src=art; img.alt=`${ev.title} artwork`; img.style.cssText='width:30px;height:30px;object-fit:cover;border-radius:3px;'; wrap.appendChild(img); }
+        const span=document.createElement('span'); span.textContent=ev.title; wrap.appendChild(span);
+        if(!/archive/i.test(ev.title)) { const a=document.createElement('a'); a.href=createGoogleCalLink(ev.title,ev.startDateUtc,ev.endDateUtc); a.target='_blank'; a.innerHTML='📅'; a.style.cssText='font-size:1.4rem;text-decoration:none;margin-left:6px;'; wrap.appendChild(a); }
+        li.appendChild(wrap); ul.appendChild(li);
+      }); container.appendChild(ul);
     });
-  } catch (e) {
-    console.error('Schedule error:', e);
-    container.innerHTML = '<p>Error loading schedule.</p>';
-  }
+  } catch (e) { console.error('Schedule error:', e); container.innerHTML='<p>Error loading schedule.</p>'; }
 }
 
 async function fetchNowPlayingArchive() {
   try {
     const { result } = await rcFetch(`/station/${STATION_ID}/schedule/live`);
-    const { metadata: md = {}, content: ct = {} } = result;
-    const el = document.getElementById('now-archive');
-    let text = 'Now Playing: ';
-    if (md.title) text += md.artist ? `${md.artist} – ${md.title}` : md.title;
-    else if (md.filename) text += md.filename;
-    else if (ct.title) text += ct.title;
-    else if (ct.name) text += ct.name;
-    else text += 'Unknown Show';
-    el.textContent = text;
-  } catch (e) {
-    console.error('Archive-now error:', e);
-    document.getElementById('now-archive').textContent = 'Unable to load archive show';
-  }
+    const { metadata: md={}, content: ct={} } = result;
+    const el=document.getElementById('now-archive'); let text='Now Playing: ';
+    if(md.title) text+=md.artist?`${md.artist} – ${md.title}`:md.title;
+    else if(md.filename) text+=md.filename;
+    else if(ct.title) text+=ct.title;
+    else if(ct.name) text+=ct.name;
+    else text+='Unknown Show';
+    el.textContent=text;
+  } catch(e) { console.error('Archive-now error:',e); document.getElementById('now-archive').textContent='Unable to load archive show'; }
 }
 
 
@@ -321,7 +236,11 @@ function openChatPopup() {
   if (isMobile) {
     const modal    = document.getElementById('chatModal'),
           iframeEl = document.getElementById('chatModalIframe');
-   iframeEl.src
+    if (modal && iframeEl) {
+      // always reload on mobile to ensure input shows
+      iframeEl.src = url;
+      modal.style.display = 'flex';
+    }
   } else {
     if (chatPopupWindow && !chatPopupWindow.closed) {
       chatPopupWindow.focus();
