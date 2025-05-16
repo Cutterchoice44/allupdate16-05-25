@@ -64,10 +64,8 @@
   
 <div class="grid-container">
   <!-- CHAT SECTION -->
- <section class="chat">
+ <section class="chat" id="radiocult-chat-container">
   <h2>Cutters Chat</h2>
-
-  <!-- main embed: eager load so the input always initializes -->
   <iframe
     title="Cutters Choice Radio Chat"
     src="https://app.radiocult.fm/embed/chat/cutters-choice-radio?theme=midnight&primaryColor=%235A8785&corners=sharp"
@@ -75,13 +73,10 @@
     height="700"
     frameborder="0"
     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-    seamless
     loading="eager">
   </iframe>
-
   <div class="chat-actions">
     <button class="popout-btn" onclick="openChatPopup()">Pop Out Chat</button>
-
   </div>
 </section>
 
@@ -131,21 +126,22 @@
     <script src="script.js?v=1747381377063" defer></script>
     <script src="slideshow.js?v=1747381377063" defer></script>
 
-    <div id="chatModal" style="display:none; justify-content:center; align-items:center;">
-      <div class="modal-content">
-        <button class="close-btn" onclick="closeChatModal()">Close</button>
-        <iframe
-          id="chatModalIframe"
-          title="Cutters Chat (Popup)"
-          width="100%"
-          height="100%"
-          frameborder="0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          seamless
-          loading="eager">
-        </iframe>
-      </div>
-    </div>  <!-- <-- make sure this closing tag is here! -->
+    <!-- Chat Modal for Mobile -->
+<div id="chatModal" style="display:none;">
+  <div class="modal-content" id="radiocult-chat-container">
+    <button class="close-btn" onclick="closeChatModal()">Close</button>
+    <iframe
+      id="chatModalIframe"
+      title="Cutters Chat (Popup)"
+      width="100%"
+      height="100%"
+      frameborder="0"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+      loading="eager">
+    </iframe>
+  </div>
+</div>
+  <!-- <-- make sure this closing tag is here! -->
 
   </body>
 </html>
