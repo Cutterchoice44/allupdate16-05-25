@@ -623,12 +623,10 @@ section h2::after {
   background: var(--brand-teal);
   animation: drawLineReverse 2s ease-out forwards;
 }
-
 @keyframes drawLineReverse {
   to {
-    width: 100%;
+    width: 100%;      /* grow to full width from the right */
   }
-}  /* ← add this */
 /* —————— Restore Teal Border on Slideshow —————— */
 #slideshow {
   border: 8px solid var(--brand-teal) !important;
