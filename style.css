@@ -66,35 +66,6 @@ html, body {
   background-size: cover;
 animation: slideLeftToRight var(--gif-speed) linear infinite;
 }
-/* THIRD GIF (Right→Left) */
-.header-gif-alt-right {
-  position: absolute;
-  top: 0;
-  left: 75%;   /* adjust starting offset so it doesn’t overlap the first */
-  height: var(--gif-height);
-  width:  var(--gif-width);
-  opacity: var(--gif-opacity);
-  z-index: 0;
-  background: url('https://cutterschoiceradio.com/Untitled%20design(7).gif')
-              no-repeat center center;
-  background-size: cover;
-  animation: slideRightToLeft var(--gif-speed) linear infinite;
-}
-
-/* FOURTH GIF (Left→Right) */
-.header-gif-alt-left {
-  position: absolute;
-  top: 0;
-  right: 75%;  /* mirror of the above */
-  height: var(--gif-height);
-  width:  var(--gif-width);
-  opacity: var(--gif-opacity);
-  z-index: 0;
-  background: url('https://cutterschoiceradio.com/Untitled%20design(8).gif')
-              no-repeat center center;
-  background-size: cover;
-  animation: slideLeftToRight var(--gif-speed) linear infinite;
-}
 
 /* ─── ANIMATIONS ───────────────────────────────────────────────────────────── */
 @keyframes slideRightToLeft {
@@ -225,8 +196,7 @@ section h2 {
 .live-player {
   background: #000;
   border: 2px solid var(--brand-teal);
-- border-radius
-+ border-radius: 6px;   /* or whatever radius you intended */
+  border-radius
   padding: 0.5rem;
   text-align: center;
 }
@@ -477,10 +447,10 @@ section h2 {
   display: none;
 }
 @media (max-width: 768px) {
-+ header .logo-container:nth-of-type(3) {
+  /* 1. Hide the second logo on mobile */
+  header .logo-container:nth-ofype(3) {
     display: none !important;
   }
-}
   /* 2. Hide the redundant archive title under player */
   #now-archive {
     display: none !important;
@@ -652,6 +622,7 @@ section h2::after {
   background: var(--brand-teal);
   animation: drawLineReverse 2s ease-out forwards;
 }
+
 @keyframes drawLineReverse {
   to {
     width: 100%;      /* grow to full width from the right */
@@ -708,7 +679,45 @@ section h2::after {
     width: var(--gif-width) !important;
   }
 
+/* ─── FIX: Mobile Chat Pop-Out Input Visibility ───────────────────────────── */
+@media (max-width: 768px) {
+  /* Hidden by default; JS will do `modal.style.display = 'flex'` to open it */
+  #chatModal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;  height: 100vh;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    /* no display:flex here in CSS! JS will add it inline */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
 
+  /* Make wrapper fill the viewport */
+  #chatModal .modal-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+  }
 
+  /* Stretch the chat iframe so its input bar is always visible */
+  #chatModal .modal-content iframe {
+    flex: 1 1 auto !important;
+    width: 100%  !important;
+    height: auto !important;
+    max-height: 100% !important;
+    border: none !important;
+    border-radius: 4px;
+  }
 
-  
+  /* Keep the “Close” button above everything */
+  #chatModal .close-btn {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    z-index: 10000;
+  }
+}
