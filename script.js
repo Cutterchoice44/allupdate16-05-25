@@ -232,21 +232,28 @@ async function fetchNowPlayingArchive() {
 // 6) ADMIN & UI ACTIONS
 // ─────────────────────────────────────────────────────────────────────────────
 // ─── CHAT POP-OUT HANDLERS (drop these in, replacing your old versions) ───────
+// ─── CHAT POP-OUT HANDLERS (mobile reparent + desktop fallback) ─────────────
 function openChatPopup() {
   const url = `https://app.radiocult.fm/embed/chat/${STATION_ID}?theme=midnight&primaryColor=%235A8785&corners=sharp`;
 
   if (isMobile) {
-    // Mobile: move the already-loaded iframe (with input) into the modal
     const mainSection = document.querySelector('section.chat');
     const chatIframe  = mainSection.querySelector('iframe');
     const modal       = document.getElementById('chatModal');
     const container   = modal.querySelector('.modal-content');
+
+    if (container) {
+      // ✂️ remove the static, blank <iframe id="chatModalIframe"> placeholder
+      const placeholder = container.querySelector('#chatModalIframe');
+      if (placeholder) placeholder.remove();
+    }
+
     if (chatIframe && modal && container) {
       container.appendChild(chatIframe);
       modal.style.display = 'flex';
     }
   } else {
-    // Desktop: original popup window
+    // desktop: open a fresh pop-up
     if (chatPopupWindow && !chatPopupWindow.closed) {
       chatPopupWindow.focus();
     } else {
@@ -260,14 +267,14 @@ function openChatPopup() {
 }
 
 function closeChatModal() {
-  // Only applies on mobile (modal)
   const modal       = document.getElementById('chatModal');
   const mainSection = document.querySelector('section.chat');
-  const modalIframe = modal.querySelector('iframe');
-  if (modal && mainSection && modalIframe) {
-    // Move it back into the page just above the pop-out button
+  const movedIframe = modal.querySelector('section.chat iframe')   // after reparent, iframe lives under modal
+                  || modal.querySelector('.modal-content iframe');  // fallback
+
+  if (modal && mainSection && movedIframe) {
     const actions = mainSection.querySelector('.chat-actions');
-    mainSection.insertBefore(modalIframe, actions);
+    mainSection.insertBefore(movedIframe, actions);
     modal.style.display = 'none';
   }
 }
