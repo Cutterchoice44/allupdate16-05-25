@@ -286,52 +286,53 @@ async function fetchNowPlayingArchive() {
 // ─────────────────────────────────────────────────────────────────────────────
 // 6) ADMIN & UI ACTIONS (CHAT POP-OUT) — **UPDATED**
 // ─────────────────────────────────────────────────────────────────────────────
+// ─── CHAT POP-OUT HANDLERS ─────────────────────────────────────────────────
+
 function openChatPopup() {
-  const url = `https://app.radiocult.fm/embed/chat/${STATION_ID}` +
-              `?theme=midnight&primaryColor=%235A8785&corners=sharp`;
+  const modal     = document.getElementById('chatModal');
+  const container = modal.querySelector('.modal-content');
 
   if (isMobile) {
-    // In-page mobile modal: inject a fresh iframe so the input bar shows
-    const chatModal     = document.getElementById('chatModal');
-    const container     = chatModal.querySelector('.modal-content');
-    // remove any old iframe
+    // remove any old chat iframe
     container.querySelectorAll('iframe').forEach(el => el.remove());
 
-    const chatIframe    = document.createElement('iframe');
-    chatIframe.src      = url;
-    chatIframe.allow    = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
-    chatIframe.loading  = 'eager';
+    // build a fresh chat iframe (with its input bar)
+    const chatIframe = document.createElement('iframe');
+    chatIframe.src     = `https://app.radiocult.fm/embed/chat/${STATION_ID}?theme=midnight&primaryColor=%235A8785&corners=sharp`;
+    chatIframe.allow   = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+    chatIframe.loading = 'eager';
+    // make it flex to fill the modal
     chatIframe.style.cssText = `
       flex: 1 1 auto;
       width: 100% !important;
-      height: 100% !important;
+      height: auto !important;
+      max-height: 100% !important;
       border: none !important;
       border-radius: 4px;
     `;
 
     container.appendChild(chatIframe);
-    chatModal.style.display = 'flex';
+    modal.style.display = 'flex';
   } else {
-    // desktop: real popup window
+    // desktop fallback opens a real popup
+    const url = `https://app.radiocult.fm/embed/chat/${STATION_ID}?theme=midnight&primaryColor=%235A8785&corners=sharp`;
     if (chatPopupWindow && !chatPopupWindow.closed) {
       chatPopupWindow.focus();
     } else {
       chatPopupWindow = window.open(
-        url,
-        'CuttersChatPopup',
-        'width=400,height=700,resizable=yes,scrollbars=yes'
+        url, 'CuttersChatPopup', 'width=400,height=700,resizable=yes,scrollbars=yes'
       );
     }
   }
 }
 
 function closeChatModal() {
-  const chatModal = document.getElementById('chatModal');
-  const container = chatModal.querySelector('.modal-content');
-  // hide & remove the injected iframe
-  chatModal.style.display = 'none';
-  container.querySelectorAll('iframe').forEach(el => el.remove());
+  const modal = document.getElementById('chatModal');
+  modal.style.display = 'none';
+  // (optional) clear out the iframe so next open is fresh
+  modal.querySelectorAll('iframe').forEach(el => el.remove());
 }
+
 
 
 // ─────────────────────────────────────────────────────────────────────────────
