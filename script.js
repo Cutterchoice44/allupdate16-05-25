@@ -298,33 +298,33 @@ async function fetchNowPlayingArchive() {
 function openChatPopup() {
   const modal     = document.getElementById('chatModal');
   const container = modal.querySelector('.modal-content');
+  const url       = `https://app.radiocult.fm/embed/chat/${STATION_ID}?theme=midnight&primaryColor=%235A8785&corners=sharp`;
 
-  // On mobile, show our in-page modal
   if (isMobile) {
-    // wipe any old iframe
+    // remove any old iframe
     container.querySelectorAll('iframe').forEach(el => el.remove());
 
-    // build a fresh chat iframe (with input bar)
+    // inject a fresh iframe (with its input bar)
     const chatIframe = document.createElement('iframe');
-    chatIframe.src     = `https://app.radiocult.fm/embed/chat/${STATION_ID}?theme=midnight&primaryColor=%235A8785&corners=sharp`;
+    chatIframe.src     = url;
+    chatIframe.title   = 'Cutters Choice Radio Chat';
     chatIframe.allow   = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
     chatIframe.loading = 'eager';
     chatIframe.style.cssText = `
       flex: 1 1 auto;
       width: 100% !important;
-      height: auto !important;
-      max-height: 100% !important;
+      height: 100% !important;
       border: none !important;
       border-radius: 4px;
     `;
-
     container.appendChild(chatIframe);
+
+    // show the modal
     modal.style.display = 'flex';
     return;
   }
 
-  // Otherwise on desktop, pop out a new window
-  const url = `https://app.radiocult.fm/embed/chat/${STATION_ID}?theme=midnight&primaryColor=%235A8785&corners=sharp`;
+  // desktop fallback: real popup
   if (chatPopupWindow && !chatPopupWindow.closed) {
     chatPopupWindow.focus();
   } else {
@@ -337,9 +337,8 @@ function openChatPopup() {
 }
 
 function closeChatModal() {
-  const modal     = document.getElementById('chatModal');
-  const container = modal.querySelector('.modal-content');
-  container.querySelectorAll('iframe').forEach(el => el.remove());
+  const modal = document.getElementById('chatModal');
+  // simply hide it
   modal.style.display = 'none';
 }
 
