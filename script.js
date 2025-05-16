@@ -8,16 +8,13 @@ const FALLBACK_ART      = "https://i.imgur.com/qWOfxOS.png";
 const MIXCLOUD_PASSWORD = "cutters44";
 const isMobile          = /Mobi|Android/i.test(navigator.userAgent);
 
-// Chat popup reference to preserve session
+// Chat popup reference and visitorId for ban logic
 let chatPopupWindow;
-// Visitor ID for ban logic
 let visitorId;
 
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 2) BAN LOGIC (FingerprintJS v3+)
-// Load FingerprintJS in your <head> with:
-// <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js" defer></script>
 // ─────────────────────────────────────────────────────────────────────────────
 function blockChat() {
   document.getElementById('popOutBtn')?.remove();
@@ -42,7 +39,7 @@ async function initBanCheck() {
       body: JSON.stringify({ visitorId })
     });
     const { banned } = await res.json();
-    if (banned === true) blockChat();
+    if (banned) blockChat();
   } catch (err) {
     console.warn('Ban check error:', err);
   }
@@ -61,7 +58,6 @@ async function sendBan() {
     console.error('Error sending ban:', err);
   }
 }
-// expose for console
 window.sendBan = sendBan;
 
 
@@ -201,7 +197,7 @@ async function fetchLiveNow() {
 async function fetchWeeklySchedule() {
   const container = document.getElementById('schedule-container');
   if (!container) return;
-  container.innerHTML = '<p>Loading this week’s schedule…</p>';
+  container.innerHTML = '<p>Loading this week\'s schedule…</p>';
   try {
     const now = new Date(),
           then = new Date(now.getTime() + 7*24*60*60*1000);
@@ -219,31 +215,30 @@ async function fetchWeeklySchedule() {
       return acc;
     }, {});
     container.innerHTML = '';
-    const fmt = iso => new Date(iso)
-      .toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const fmt = iso =>
+      new Date(iso).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
     Object.entries(byDay).forEach(([day, evs]) => {
       const h3 = document.createElement('h3');
       h3.textContent = day;
       container.appendChild(h3);
       const ul = document.createElement('ul');
       ul.style.listStyle = 'none';
-      ul.style.padding = '0';
+      ul.style.padding   = '0';
       evs.forEach(ev => {
-        const li = document.createElement('li');
+        const li   = document.createElement('li');
         li.style.marginBottom = '1rem';
         const wrap = document.createElement('div');
-        wrap.style.display = 'flex';
-        wrap.style.alignItems = 'center';
-        wrap.style.gap = '8px';
+        wrap.style.display     = 'flex';
+        wrap.style.alignItems  = 'center';
+        wrap.style.gap         = '8px';
         const t = document.createElement('strong');
         t.textContent = `${fmt(ev.startDateUtc)}–${fmt(ev.endDateUtc)}`;
         wrap.appendChild(t);
-        const art = ev.metadata?.artwork?.default
-                 || ev.metadata?.artwork?.original;
+        const art = ev.metadata?.artwork?.default || ev.metadata?.artwork?.original;
         if (art) {
           const img = document.createElement('img');
-          img.src = art;
-          img.alt = `${ev.title} artwork`;
+          img.src    = art;
+          img.alt    = `${ev.title} artwork`;
           img.style.cssText = 'width:30px;height:30px;object-fit:cover;border-radius:3px;';
           wrap.appendChild(img);
         }
@@ -252,7 +247,7 @@ async function fetchWeeklySchedule() {
         wrap.appendChild(span);
         if (!/archive/i.test(ev.title)) {
           const a = document.createElement('a');
-          a.href = createGoogleCalLink(ev.title, ev.startDateUtc, ev.endDateUtc);
+          a.href   = createGoogleCalLink(ev.title, ev.startDateUtc, ev.endDateUtc);
           a.target = '_blank';
           a.innerHTML = '📅';
           a.style.cssText = 'font-size:1.4rem;text-decoration:none;margin-left:6px;';
@@ -272,7 +267,7 @@ async function fetchWeeklySchedule() {
 async function fetchNowPlayingArchive() {
   try {
     const { result } = await rcFetch(`/station/${STATION_ID}/schedule/live`);
-    const { metadata: md = {}, content: ct = {} } = result;
+    const { metadata: md={}, content: ct={} } = result;
     const el = document.getElementById('now-archive');
     let text = 'Now Playing: ';
     if (md.title) text += md.artist ? `${md.artist} – ${md.title}` : md.title;
@@ -289,20 +284,35 @@ async function fetchNowPlayingArchive() {
 
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 6) ADMIN & UI ACTIONS
+// 6) ADMIN & UI ACTIONS (CHAT POP-OUT) — **UPDATED**
 // ─────────────────────────────────────────────────────────────────────────────
-
-// ─── CHAT POP-OUT HANDLERS (mobile & desktop) ───────────────────────────────
-
-// Open a **real** window on desktop, but on mobile inject a **fresh** iframe
-// Pop the mobile modal into view (or open a real popup on desktop)
 function openChatPopup() {
-  const url   = `https://app.radiocult.fm/embed/chat/${STATION_ID}?theme=midnight&primaryColor=%235A8785&corners=sharp`;
+  const url = `https://app.radiocult.fm/embed/chat/${STATION_ID}` +
+              `?theme=midnight&primaryColor=%235A8785&corners=sharp`;
+
   if (isMobile) {
-    // show the modal (iframe is already in DOM and loaded)
-    document.getElementById('chatModal').style.display = 'flex';
+    // In-page mobile modal: inject a fresh iframe so the input bar shows
+    const chatModal     = document.getElementById('chatModal');
+    const container     = chatModal.querySelector('.modal-content');
+    // remove any old iframe
+    container.querySelectorAll('iframe').forEach(el => el.remove());
+
+    const chatIframe    = document.createElement('iframe');
+    chatIframe.src      = url;
+    chatIframe.allow    = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+    chatIframe.loading  = 'eager';
+    chatIframe.style.cssText = `
+      flex: 1 1 auto;
+      width: 100% !important;
+      height: 100% !important;
+      border: none !important;
+      border-radius: 4px;
+    `;
+
+    container.appendChild(chatIframe);
+    chatModal.style.display = 'flex';
   } else {
-    // desktop: real window
+    // desktop: real popup window
     if (chatPopupWindow && !chatPopupWindow.closed) {
       chatPopupWindow.focus();
     } else {
@@ -316,7 +326,11 @@ function openChatPopup() {
 }
 
 function closeChatModal() {
-  document.getElementById('chatModal').style.display = 'none';
+  const chatModal = document.getElementById('chatModal');
+  const container = chatModal.querySelector('.modal-content');
+  // hide & remove the injected iframe
+  chatModal.style.display = 'none';
+  container.querySelectorAll('iframe').forEach(el => el.remove());
 }
 
 
@@ -337,7 +351,9 @@ if (rightEl && leftEl) {
   }
   applySet(0);
   const speedSec = parseFloat(
-    getComputedStyle(document.documentElement).getPropertyValue('--gif-speed').replace('s','')
+    getComputedStyle(document.documentElement)
+      .getPropertyValue('--gif-speed')
+      .replace('s','')
   ) || 12;
   setInterval(() => {
     sweepCount++;
@@ -354,12 +370,13 @@ if (rightEl && leftEl) {
 // 8) INITIALIZATION
 // ─────────────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  // Core data inits
   fetchLiveNow();
   fetchWeeklySchedule();
   fetchNowPlayingArchive();
   loadArchives();
 
-  // Poll live & archive every 30s
+  // Repeat polling
   setInterval(fetchLiveNow, 30000);
   setInterval(fetchNowPlayingArchive, 30000);
 
@@ -367,12 +384,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (isMobile) {
     document.querySelector('.mixcloud')?.remove();
   } else {
-    document.querySelectorAll('iframe.mixcloud-iframe').forEach(ifr => {
-      ifr.src = ifr.src || ifr.dataset.src;
-    });
+    document.querySelectorAll('iframe.mixcloud-iframe')
+      .forEach(ifr => { ifr.src = ifr.src || ifr.dataset.src; });
     shuffleIframesDaily();
     const s = document.createElement('script');
-    s.src   = 'https://widget.mixcloud.com/widget.js';
+    s.src = 'https://widget.mixcloud.com/widget.js';
     s.async = true;
     document.body.appendChild(s);
   }
@@ -380,28 +396,31 @@ document.addEventListener('DOMContentLoaded', () => {
   // Pop-out player
   document.getElementById('popOutBtn')?.addEventListener('click', () => {
     const src = document.getElementById('inlinePlayer').src;
-    const w   = window.open('', 'CCRPlayer', 'width=400,height=200,resizable=yes');
+    const w = window.open('', 'CCRPlayer', 'width=400,height=200,resizable=yes');
     w.document.write(`
       <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       <title>Cutters Choice Player</title>
-      <style>body{margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh;}iframe{width:100%;height:180px;border:none;border-radius:4px;}</style>
-      </head><body><iframe src="${src}" allow="autoplay"></iframe></body></html>
+      <style>body{margin:0;background:#111;display:flex;
+      align-items:center;justify-content:center;height:100vh;}
+      iframe{width:100%;height:180px;border:none;border-radius:4px;}
+      </style></head><body>
+      <iframe src="${src}" allow="autoplay"></iframe>
+      </body></html>
     `);
     w.document.close();
   });
 
-  // Clean up blank chat-user entries
+  // Clean up empty user-list entries
   const ul = document.querySelector('.rc-user-list');
   if (ul) {
     new MutationObserver(() => {
-      Array.from(ul.children).forEach(li => {
-        if (!li.textContent.trim()) li.remove();
-      });
+      Array.from(ul.children)
+        .forEach(li => { if (!li.textContent.trim()) li.remove(); });
     }).observe(ul, { childList: true });
   }
 
-  // Defer ban check until idle
+  // Defer ban check
   if ('requestIdleCallback' in window) {
     requestIdleCallback(initBanCheck, { timeout: 2000 });
   } else {
