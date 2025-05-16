@@ -196,7 +196,8 @@ section h2 {
 .live-player {
   background: #000;
   border: 2px solid var(--brand-teal);
-  border-radius
+- border-radius
++ border-radius: 6px;   /* or whatever radius you intended */
   padding: 0.5rem;
   text-align: center;
 }
@@ -447,10 +448,10 @@ section h2 {
   display: none;
 }
 @media (max-width: 768px) {
-  /* 1. Hide the second logo on mobile */
-  header .logo-container:nth-ofype(3) {
++ header .logo-container:nth-of-type(3) {
     display: none !important;
   }
+}
   /* 2. Hide the redundant archive title under player */
   #now-archive {
     display: none !important;
@@ -625,8 +626,9 @@ section h2::after {
 
 @keyframes drawLineReverse {
   to {
-    width: 100%;      /* grow to full width from the right */
+    width: 100%;
   }
+}  /* ← add this */
 /* —————— Restore Teal Border on Slideshow —————— */
 #slideshow {
   border: 8px solid var(--brand-teal) !important;
